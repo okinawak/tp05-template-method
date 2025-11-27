@@ -9,15 +9,16 @@ import java.util.List;
 public class EtudiantDAO {
 
     public void save(Etudiant etudiant) throws SQLException {
-    new JDBCTemplate() {
+    new JDBCTemplate<Void>() {
         @Override
-        protected void executerAvecConnexion(Connection connection) throws SQLException {
+        protected Void executerAvecConnexion(Connection connection) throws SQLException {
             String sql = "insert into Etudiant values (?,?)";
             try (PreparedStatement pst = connection.prepareStatement(sql)) {
                 pst.setLong(1, etudiant.getId());
                 pst.setString(2, etudiant.getNom());
                 pst.executeUpdate();
             }
+            return null;
         }
     }.executer();
 }
@@ -46,25 +47,23 @@ public class EtudiantDAO {
         } 
     }
 
-    public Etudiant findById(Long id) throws SQLException {
-        Etudiant etudiant = null;
-        String sql = "select * from Etudiant where etudiant_id = ?";
-        try (
-                // Fermeture automatique avec try-with-resources
-                Connection connection = ConnectionFactory.getInstance().getConnection();
-                PreparedStatement pst = connection.prepareStatement(sql);) {
-            pst.setLong(1, id);
-            try (ResultSet res = pst.executeQuery()) { // try-with-ressources pour fermer res à coup sûr.
-                if (res.next()) {
-                    Long idRes = res.getLong("ETUDIANT_ID");
-                    String nomRes = res.getString("NOM");
-                    etudiant = new Etudiant(idRes, nomRes);
+public Etudiant findById(Long id) throws SQLException {
+    return new JDBCTemplate<Etudiant>() {
+        @Override
+        protected Etudiant executerAvecConnexion(Connection connection) throws SQLException {
+            String sql = "select * from Etudiant where etudiant_id = ?";
+            try (PreparedStatement pst = connection.prepareStatement(sql)) {
+                pst.setLong(1, id);
+                try (ResultSet res = pst.executeQuery()) {
+                    if (res.next()) {
+                        return new Etudiant(res.getLong("ETUDIANT_ID"), res.getString("NOM"));
+                    }
                 }
-                // sinon : résultat null.
             }
-        } 
-        return etudiant;
-    }
+            return null;
+        }
+    }.executer();
+}
 
     public List<Etudiant> findAll() throws SQLException {
         ArrayList<Etudiant> liste = new ArrayList<>();
