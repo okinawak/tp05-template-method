@@ -14,23 +14,31 @@ public class EtudiantDAO {
         SQLSimpleHelper.insert(sql, etudiant.getId(), etudiant.getNom());
     }
 
-    public void update(Etudiant etudiant) throws SQLException {
-          // à compléter...
-    }
+public void update(Etudiant etudiant) throws SQLException {
+    String sql = "update etudiant set nom = ? where etudiant_id = ?";
+    SQLSimpleHelper.update(sql, etudiant.getNom(), etudiant.getId());
+}
 
-    public void delete(Long id) throws SQLException {
-        // à compléter...
-    }
+public void delete(Long id) throws SQLException {
+    String sql = "delete from Etudiant where etudiant_id = ?";
+    SQLSimpleHelper.update(sql, id);
+}
 
     public Etudiant findById(Long id) throws SQLException {
-        // à compléter...
+    String sql = "select * from Etudiant where etudiant_id = ?";
+    List<Etudiant> resultats = new EtudiantQueryTemplate(sql).execute(id);
+    
+    if (resultats.isEmpty()) {
         return null;
+    } else {
+        return resultats.get(0);
     }
+}
 
     public List<Etudiant> findAll() throws SQLException {
-        // à compléter...
-        return null;
-    }
+    String sql = "select * from Etudiant order by etudiant_id";
+    return new EtudiantQueryTemplate(sql).execute();
+}
 
     private static class EtudiantQueryTemplate extends SQLQueryTemplate<Etudiant> {        
         protected EtudiantQueryTemplate(String sql) {
