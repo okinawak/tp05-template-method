@@ -9,16 +9,18 @@ import java.util.List;
 public class EtudiantDAO {
 
     public void save(Etudiant etudiant) throws SQLException {
-        String sql = "insert into Etudiant values (?,?)";
-        try (
-                // Fermeture automatique avec try-with-resources
-                Connection connection = ConnectionFactory.getInstance().getConnection();
-                PreparedStatement pst = connection.prepareStatement(sql);) {
-            pst.setLong(1, etudiant.getId());
-            pst.setString(2, etudiant.getNom());
-            pst.executeUpdate();         
-        } 
-    }
+    new JDBCTemplate() {
+        @Override
+        protected void executerAvecConnexion(Connection connection) throws SQLException {
+            String sql = "insert into Etudiant values (?,?)";
+            try (PreparedStatement pst = connection.prepareStatement(sql)) {
+                pst.setLong(1, etudiant.getId());
+                pst.setString(2, etudiant.getNom());
+                pst.executeUpdate();
+            }
+        }
+    }.executer();
+}
 
     public void update(Etudiant etudiant) throws SQLException {
         String sql = "update etudiant set nom = ? where etudiant_id = ?";
